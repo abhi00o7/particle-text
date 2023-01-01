@@ -1,0 +1,21 @@
+* {
+  margin: 0;
+  padding: 0;
+  /* box sizing only affects padding and not margin */
+  box-sizing: border-box;
+}
+
+canvas {
+  background: #0f0f0f;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+input{
+  position: absolute;
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin: 10px;
+  z-index: 100; 
+}
