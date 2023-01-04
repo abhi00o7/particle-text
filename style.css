@@ -3,8 +3,29 @@
   padding: 0;
   /* box sizing only affects padding and not margin */
   box-sizing: border-box;
+/* set font to Rubik Bubbles */
+  font-family: 'Rubik Bubbles', sans-serif;
 }
-
+/* change whole document font to Rubik Bubbles */
+body {
+  font-family: 'Rubik Bubbles', sans-serif;
+  /* background color */
+  background-color: #0f0f0f;
+  /* background image repeat */
+  background-repeat: no-repeat;
+  /* background image size */
+  background-size: cover;
+  /* background image position */
+  background-position: center;
+  /* background image attachment */
+  background-attachment: fixed;
+  /* background image opacity */
+  opacity: 0.9;
+  /* background image blend mode */
+  mix-blend-mode: multiply;
+  /* background image transition */
+  transition: 0.5s;
+}
 canvas {
   background: #0f0f0f;
   position: absolute;
