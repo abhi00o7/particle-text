@@ -1,16 +1,16 @@
 window.addEventListener("load", function () {
   const canvas = document.querySelector("#canvas0");
-  const textInput = document.querySelector("#textInput");
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", {
+    willReadFrequently: true,
+  });
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  console.log(ctx);
 
   class Particle {
     constructor(effect, x, y, color) {
       this.effect = effect;
       this.x = Math.random() * this.effect.canvasWidth;
-      this.y = 0;
+      this.y = this.effect.canvasHeight;
       this.color = color;
       this.originX = x;
       this.originY = y;
@@ -18,33 +18,37 @@ window.addEventListener("load", function () {
       this.dx = 0;
       this.dy = 0;
       this.vx = 0;
-      this.force = 0;
       this.vy = 0;
+      this.force = 0;
       this.friction = 0.9;
       this.angle = 0;
-      this.gravity = 0.1;
-      this.distance = 0;
-      this.friction = Math.random() * 0.05 + 0.94;
+      this.friction = Math.random() * 0.7 + 0.15;
       // change the ease to control the speed of the particles
-      this.ease = Math.random() * 0.1 + 0.005;
-      this.gravity = Math.random() * 0.05 + 0.94;
-      this.maxDistance = Math.random() * 50 + 50;
-      this.maxSize = Math.random() * 10 + 10;
-      this.maxSpeed = Math.random() * 10 + 10;
-      this.maxForce = Math.random() * 10 + 10;
-      this.maxAngle = Math.random() * 10 + 10;
-      this.maxGravity = Math.random() * 10 + 10;
-      this.maxFriction = Math.random() * 10 + 10;
-      this.maxEase = Math.random() * 10 + 10;
+      this.ease = Math.random() * 0.7 + 0.005;
     }
     draw() {
       this.effect.context.fillStyle = this.color;
       this.effect.context.fillRect(this.x, this.y, this.size, this.size);
     }
     update() {
+      this.dx = this.effect.mouse.x - this.x;
+      this.dy = this.effect.mouse.y - this.y;
+      this.distance = this.dx * this.dx + this.dy * this.dy;
+      // this.distance = Math.hypot(this.dx, this.dy);
+
+      this.force = -this.effect.mouse.radius / this.distance;
+
+      if (this.distance < this.effect.mouse.radius) {
+        this.angle = Math.atan2(this.dy, this.dx);
+        this.vx += this.force * Math.cos(this.angle);
+        this.vy += this.force * Math.sin(this.angle);
+      }
+
       // change the x and y to control the direction of the particles
-      this.x += (this.originX - this.x) * this.ease ;
-      this.y +=( this.originY - this.y);
+      this.x +=
+        (this.vx *= this.friction) + (this.originX - this.x) * this.ease;
+      this.y +=
+        (this.vy *= this.friction) + (this.originY - this.y) * this.ease;
     }
   }
 
@@ -53,12 +57,14 @@ window.addEventListener("load", function () {
       this.context = context;
       this.canvasWidth = canvasWidth;
       this.canvasHeight = canvasHeight;
-      this.textX = canvasWidth / 2;
-      this.textY = canvasHeight / 2;
-      this.fontSize = 100;
-
+      this.textX = this.canvasWidth / 2;
+      this.textY = this.canvasHeight / 2;
+      this.fontSize = 190;
+      // this.context.letterSpacing = '10px';
+      this.lineHeight = this.fontSize * 1.1;
       this.maxTextWidth = this.canvasWidth * 0.5;
       this.lineHeight = 100;
+      this.verticalOffset = 0;
 
       this.textInput = document.querySelector("#textInput");
       this.textInput.addEventListener("keyup", (e) => {
@@ -93,13 +99,13 @@ window.addEventListener("load", function () {
       );
       gradient.addColorStop(0.3, "#ff0000");
       gradient.addColorStop(0.5, "fuchsia");
-      gradient.addColorStop(0.7, "purple");
+      gradient.addColorStop(0.7, "#0000ff");
       this.context.fillStyle = gradient;
       this.context.textAlign = "center";
       this.context.textBaseline = "middle";
       this.context.strokeStyle = "white";
       this.context.lineWidth = 0.5;
-      this.context.font = this.fontSize + "px Helvetica";
+      this.context.font = this.fontSize + "px Rubik Bubbles";
 
       // break text into lines
       let linesArray = [];
@@ -121,7 +127,7 @@ window.addEventListener("load", function () {
         linesArray[lineCounter] = line;
       }
       let textHeight = this.lineHeight * lineCounter;
-      this.textY = this.canvasHeight / 2 - textHeight / 2;
+      this.textY = this.canvasHeight / 2 - textHeight / 2 + this.verticalOffset;
       linesArray.forEach((line, index) => {
         this.context.fillText(
           line,
@@ -167,10 +173,17 @@ window.addEventListener("load", function () {
         particle.update();
       });
     }
+    resize(height, width) {
+      this.canvasWidth = width;
+      this.canvasHeight = height;
+      this.textX = this.canvasWidth/ 2;
+      this.textY = this.canvasHeight / 2;
+      this.maxTextWidth = this.canvasWidth * 0.5;
+    }
   }
 
   const effect = new Effect(ctx, canvas.width, canvas.height);
-  effect.wrapText("Hello World");
+  effect.wrapText(this.textInput.value);
 
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -178,4 +191,12 @@ window.addEventListener("load", function () {
     requestAnimationFrame(animate);
   }
   animate();
+
+  window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    effect.resize(canvas.height, canvas.width);
+    effect.wrapText(effect.textInput.value);
+
+  });
 });
