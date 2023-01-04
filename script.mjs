@@ -24,54 +24,87 @@ window.addEventListener("load", function () {
       this.canvasHeight = canvasHeight;
       this.textX = canvasWidth / 2;
       this.textY = canvasHeight / 2;
+      this.fontSize = 100;
+
+      this.maxTextWidth = this.canvasWidth * 0.5;
+      this.lineHeight = 100;
+
+      this.textInput = document.querySelector("#textInput");
     }
     wrapText(text) {
+      // canvas settings
+      const gradient = this.context.createLinearGradient(
+        0,
+        0,
+        this.canvasWidth,
+        this.canvasHeight
+      );
+      gradient.addColorStop(0.3, "#ff0000");
+      gradient.addColorStop(0.5, "fuchsia");
+      gradient.addColorStop(0.7, "purple");
+      this.context.fillStyle = gradient;
+      this.context.textAlign = "center";
+      this.context.textBaseline = "middle";
+      this.context.strokeStyle = "white";
+      this.context.lineWidth = 0.5;
+      this.context.font = this.fontSize + "px Helvetica";
       this.context.fillText(text, this.textX, this.textY);
+      this.context.strokeText(text, this.textX, this.textY);
+
+      // break text into lines
+      let linesArray = [];
+      let lineCounter = 0;
+      let line = "";
+      let words = text.split(" ");
+
+      for (let i = 0; i < words.length; i++) {
+        let testLine = line + words[i] + " ";
+        let testWidth = this.context.measureText(testLine).width;
+
+        if (testWidth > this.maxTextWidth) {
+          linesArray[lineCounter] = line;
+          lineCounter++;
+          line = words[i] + " ";
+        } else {
+          line = testLine;
+        }
+        linesArray[lineCounter] = line;
+      }
+      let textHeight = this.lineHeight * lineCounter;
+      this.textY = this.canvasHeight / 2 - textHeight / 2;
+      linesArray.forEach((line, index) => {
+        this.context.fillText(
+          line,
+          this.canvasWidth / 2,
+          this.textY + index * this.lineHeight
+        );
+        this.context.strokeText(
+          line,
+          this.canvasWidth / 2,
+          this.textY + index * this.lineHeight
+        );
+      });
     }
     convertToParticles() {}
     render(h) {
-      this.particles.forEach((particle) => {
-        particle.draw();
-        particle.update();
-      });
+      // this.particles.forEach((particle) => {
+      //   particle.draw();
+      //   particle.update();
+      // });
     }
   }
 
   const effect = new Effect(ctx, canvas.width, canvas.height);
+  effect.wrapText("Happy New Year 2023!");
+  console.log(effect);
 
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     effect.render();
     requestAnimationFrame(animate);
   }
-
-  ctx.beginPath();
-  ctx.moveTo(canvas.width / 2, 0);
-  ctx.lineTo(canvas.width / 2, canvas.height);
-  ctx.strokeStyle = "green";
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(0, canvas.height / 2);
-  ctx.lineTo(canvas.width, canvas.height / 2);
-  ctx.strokeStyle = "blue";
-  ctx.stroke();
-
-  const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-  gradient.addColorStop(0.3, "#ff0000");
-  gradient.addColorStop(0.5, "fuchsia");
-  gradient.addColorStop(0.7, "purple");
-
-  ctx.fillStyle = gradient;
-  ctx.strokeStyle = "white";
-  ctx.lineWidth = 0.5;
-  ctx.font = "100px Arial";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-
-  const maxTextWidth = canvas.width * 0.5;
-  let lineHeight = 100;
-
+  /*
+  
   function wrapText(text) {
     let linesArray = [];
     let lineCounter = 0;
@@ -99,10 +132,10 @@ window.addEventListener("load", function () {
       ctx.strokeText(line, canvas.width / 2, textY + index * lineHeight);
     });
   }
-
   wrapText("Happy New Year 2023!");
   textInput.addEventListener("input", function () {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     wrapText(textInput.value);
   });
+  */
 });
