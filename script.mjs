@@ -7,14 +7,45 @@ window.addEventListener("load", function () {
   console.log(ctx);
 
   class Particle {
-    constructor(x, y, radius, color) {
-      this.x = x;
-      this.y = y;
-      this.radius = radius;
+    constructor(effect, x, y, color) {
+      this.effect = effect;
+      this.x = Math.random() * this.effect.canvasWidth;
+      this.y = 0;
       this.color = color;
+      this.originX = x;
+      this.originY = y;
+      this.size = this.effect.gap;
+      this.dx = 0;
+      this.dy = 0;
+      this.vx = 0;
+      this.force = 0;
+      this.vy = 0;
+      this.friction = 0.9;
+      this.angle = 0;
+      this.gravity = 0.1;
+      this.distance = 0;
+      this.friction = Math.random() * 0.05 + 0.94;
+      // change the ease to control the speed of the particles
+      this.ease = Math.random() * 0.1 + 0.005;
+      this.gravity = Math.random() * 0.05 + 0.94;
+      this.maxDistance = Math.random() * 50 + 50;
+      this.maxSize = Math.random() * 10 + 10;
+      this.maxSpeed = Math.random() * 10 + 10;
+      this.maxForce = Math.random() * 10 + 10;
+      this.maxAngle = Math.random() * 10 + 10;
+      this.maxGravity = Math.random() * 10 + 10;
+      this.maxFriction = Math.random() * 10 + 10;
+      this.maxEase = Math.random() * 10 + 10;
     }
-    draw() {}
-    update() {}
+    draw() {
+      this.effect.context.fillStyle = this.color;
+      this.effect.context.fillRect(this.x, this.y, this.size, this.size);
+    }
+    update() {
+      // change the x and y to control the direction of the particles
+      this.x += (this.originX - this.x) * this.ease ;
+      this.y +=( this.originY - this.y);
+    }
   }
 
   class Effect {
@@ -30,6 +61,27 @@ window.addEventListener("load", function () {
       this.lineHeight = 100;
 
       this.textInput = document.querySelector("#textInput");
+      this.textInput.addEventListener("keyup", (e) => {
+        if (e.key !== " ") {
+          this.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+          this.wrapText(e.target.value);
+        }
+      });
+
+      // particle text settings
+
+      this.particles = [];
+      // use the gap to control the density of the particles
+      this.gap = 4;
+      this.mouse = {
+        radius: 20000,
+        x: 0,
+        y: 0,
+      };
+      window.addEventListener("mousemove", (e) => {
+        this.mouse.x = e.x;
+        this.mouse.y = e.y;
+      });
     }
     wrapText(text) {
       // canvas settings
@@ -48,8 +100,6 @@ window.addEventListener("load", function () {
       this.context.strokeStyle = "white";
       this.context.lineWidth = 0.5;
       this.context.font = this.fontSize + "px Helvetica";
-      this.context.fillText(text, this.textX, this.textY);
-      this.context.strokeText(text, this.textX, this.textY);
 
       // break text into lines
       let linesArray = [];
@@ -84,58 +134,48 @@ window.addEventListener("load", function () {
           this.textY + index * this.lineHeight
         );
       });
+      this.convertToParticles();
     }
-    convertToParticles() {}
-    render(h) {
-      // this.particles.forEach((particle) => {
-      //   particle.draw();
-      //   particle.update();
-      // });
+    convertToParticles() {
+      this.particles = [];
+      const pixels = this.context.getImageData(
+        0,
+        0,
+        this.canvasWidth,
+        this.canvasHeight
+      ).data;
+      this.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+      for (let y = 0; y < this.canvasHeight; y += this.gap) {
+        for (let x = 0; x < this.canvasWidth; x += this.gap) {
+          const index = (y * this.canvasWidth + x) * 4;
+
+          const alpha = pixels[index + 3];
+          if (alpha > 0) {
+            const red = pixels[index];
+            const green = pixels[index + 1];
+            const blue = pixels[index + 2];
+            const color = `rgb(${red}, ${green}, ${blue})`;
+            // const particle = new Particle(x, y, 1, color);
+            this.particles.push(new Particle(this, x, y, color));
+          }
+        }
+      }
+    }
+    render() {
+      this.particles.forEach((particle) => {
+        particle.draw();
+        particle.update();
+      });
     }
   }
 
   const effect = new Effect(ctx, canvas.width, canvas.height);
-  effect.wrapText("Happy New Year 2023!");
-  console.log(effect);
+  effect.wrapText("Hello World");
 
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     effect.render();
     requestAnimationFrame(animate);
   }
-  /*
-  
-  function wrapText(text) {
-    let linesArray = [];
-    let lineCounter = 0;
-    let line = "";
-    let words = text.split(" ");
-
-    for (let i = 0; i < words.length; i++) {
-      let testLine = line + words[i] + " ";
-      let testWidth = ctx.measureText(testLine).width;
-
-      if (testWidth > maxTextWidth) {
-        linesArray[lineCounter] = line;
-        lineCounter++;
-        line = words[i] + " ";
-      } else {
-        line = testLine;
-      }
-      linesArray[lineCounter] = line;
-    }
-    console.log(linesArray);
-    let textHeight = lineHeight * lineCounter;
-    let textY = canvas.height / 2 - textHeight / 2;
-    linesArray.forEach((line, index) => {
-      ctx.fillText(line, canvas.width / 2, textY + index * lineHeight);
-      ctx.strokeText(line, canvas.width / 2, textY + index * lineHeight);
-    });
-  }
-  wrapText("Happy New Year 2023!");
-  textInput.addEventListener("input", function () {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    wrapText(textInput.value);
-  });
-  */
+  animate();
 });
