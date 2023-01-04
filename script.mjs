@@ -6,6 +6,45 @@ window.addEventListener("load", function () {
   canvas.height = window.innerHeight;
   console.log(ctx);
 
+  class Particle {
+    constructor(x, y, radius, color) {
+      this.x = x;
+      this.y = y;
+      this.radius = radius;
+      this.color = color;
+    }
+    draw() {}
+    update() {}
+  }
+
+  class Effect {
+    constructor(context, canvasWidth, canvasHeight) {
+      this.context = context;
+      this.canvasWidth = canvasWidth;
+      this.canvasHeight = canvasHeight;
+      this.textX = canvasWidth / 2;
+      this.textY = canvasHeight / 2;
+    }
+    wrapText(text) {
+      this.context.fillText(text, this.textX, this.textY);
+    }
+    convertToParticles() {}
+    render(h) {
+      this.particles.forEach((particle) => {
+        particle.draw();
+        particle.update();
+      });
+    }
+  }
+
+  const effect = new Effect(ctx, canvas.width, canvas.height);
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    effect.render();
+    requestAnimationFrame(animate);
+  }
+
   ctx.beginPath();
   ctx.moveTo(canvas.width / 2, 0);
   ctx.lineTo(canvas.width / 2, canvas.height);
@@ -25,7 +64,7 @@ window.addEventListener("load", function () {
 
   ctx.fillStyle = gradient;
   ctx.strokeStyle = "white";
-  ctx.lineWidth = .5;
+  ctx.lineWidth = 0.5;
   ctx.font = "100px Arial";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
