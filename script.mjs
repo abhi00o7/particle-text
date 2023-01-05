@@ -59,7 +59,7 @@ window.addEventListener("load", function () {
       this.canvasHeight = canvasHeight;
       this.textX = this.canvasWidth / 2;
       this.textY = this.canvasHeight / 2;
-      this.fontSize = 190;
+      this.fontSize = 200;
       // this.context.letterSpacing = '10px';
       this.lineHeight = this.fontSize * 1.1;
       this.maxTextWidth = this.canvasWidth * 0.5;
@@ -119,7 +119,7 @@ window.addEventListener("load", function () {
 
         if (testWidth > this.maxTextWidth) {
           linesArray[lineCounter] = line;
-          lineCounter++;
+          lineCounter+=2;
           line = words[i] + " ";
         } else {
           line = testLine;
